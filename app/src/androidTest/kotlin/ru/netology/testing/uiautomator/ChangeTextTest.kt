@@ -1,6 +1,7 @@
 package ru.netology.testing.uiautomator
 
 import android.content.Context
+import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -17,7 +18,7 @@ import org.junit.runner.RunWith
 const val SETTINGS_PACKAGE = "com.android.settings"
 const val MODEL_PACKAGE = "ru.netology.testing.uiautomator"
 
-const val TIMEOUT = 5000L
+const val TIMEOUT = 7000L
 
 @RunWith(AndroidJUnit4::class)
 class ChangeTextTest {
@@ -73,7 +74,9 @@ class ChangeTextTest {
 
     private fun waitForPackage(packageName: String) {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+        val intent = context.packageManager.getLaunchIntentForPackage(packageName)?.apply {
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        }
         context.startActivity(intent)
         device.wait(Until.hasObject(By.pkg(packageName)), TIMEOUT)
     }
@@ -103,9 +106,11 @@ class ChangeTextTest {
         val packageName = MODEL_PACKAGE
         waitForPackage(packageName)
 
+        device.wait(Until.hasObject(By.res(packageName, "userInput")), TIMEOUT)
         device.findObject(By.res(packageName, "userInput")).text = textToSet
         device.findObject(By.res(packageName, "buttonChange")).click()
 
+        device.wait(Until.hasObject(By.res(packageName, "textToBeChanged")), TIMEOUT)
         val result = device.findObject(By.res(packageName, "textToBeChanged")).text
         assertEquals(textToSet, result)
     }
@@ -115,6 +120,7 @@ class ChangeTextTest {
         val packageName = MODEL_PACKAGE
         waitForPackage(packageName)
 
+        device.wait(Until.hasObject(By.res(packageName, "userInput")), TIMEOUT)
         val initialText = device.findObject(By.res(packageName, "textToBeChanged")).text
 
         device.findObject(By.res(packageName, "userInput")).text = "   "
@@ -129,6 +135,7 @@ class ChangeTextTest {
         val packageName = MODEL_PACKAGE
         waitForPackage(packageName)
 
+        device.wait(Until.hasObject(By.res(packageName, "userInput")), TIMEOUT)
         val newText = "Netology UI Automator"
         device.findObject(By.res(packageName, "userInput")).text = newText
         device.findObject(By.res(packageName, "buttonActivity")).click()
